@@ -103,6 +103,13 @@ def run_simulation(
     cpl = total_cost / total_leads if total_leads > 0 else 0
     cpa = total_cost / num_booked if num_booked > 0 else 0
 
+    # Separar custos: leads processados (com resposta) e success fees puros
+    # POC: 2.000 leads processados inclusos, success fees sempre adicionais
+    cost_leads_processados = cost_replies  # Custo por lead com resposta
+    success_fees_puros = (
+        cost_qualified + cost_booked + cost_comissao
+    )  # Qualificação, avanço, comissão
+
     return {
         "total_leads": total_leads,
         "num_no_replies": num_no_replies,
@@ -112,6 +119,8 @@ def run_simulation(
         "num_vendas": num_vendas,
         "cost_no_reply": cost_no_reply,
         "cost_replies": cost_replies,
+        "cost_leads_processados": cost_leads_processados,
+        "success_fees_puros": success_fees_puros,
         "cost_qualified": cost_qualified,
         "cost_booked": cost_booked,
         "cost_comissao": cost_comissao,
@@ -269,64 +278,55 @@ with st.expander("🎯 **Fluxo por Segmento de Cliente**", expanded=True):
 with st.expander(
     "💰 **Modelo de Cobrança & Alinhamento de Incentivos**", expanded=True
 ):
-    st.markdown("### Por que nosso modelo funciona para você")
-    st.markdown(
-        "Nosso modelo de precificação foi desenhado para **alinhar nossos incentivos com os seus resultados**:"
-    )
+    st.markdown("### POC (3 meses) + Continuidade")
 
-    # Tabela de preços usando HTML para evitar problemas com R$
+    poc_col1, poc_col2 = st.columns(2)
+
+    with poc_col1:
+        st.success(
+            """
+            **🚀 POC (Meses 1-3)**
+            
+            **Taxa de Setup: 14.470 reais**
+            - Criação da Tamires (Agente IA)
+            - Integração Salesforce
+            - Suporte & Treinamento
+            - **2.000 leads processados/mês**
+            
+            **+ Success Fees (adicionais):**
+            - Por lead qualificado
+            - Por lead avançado/agendado
+            - **50% da 1ª mensalidade** por venda
+            
+            *Leads processados = leads que responderam*
+            """
+        )
+
+    with poc_col2:
+        st.info(
+            """
+            **📈 Pós-POC (Mês 4+)**
+            
+            **Custo por Lead Processado:**
+            - 2,50 a 5,00 reais (escalonado)
+            - Cobrança mínima mensal aplicável
+            
+            **+ Success Fees:**
+            - 5 a 15 reais por qualificação
+            - 40 a 80 reais por avanço
+            - **50% da 1ª mensalidade** por venda
+            
+            *Preços escalonados por volume*
+            """
+        )
+
+    st.markdown("---")
+    st.markdown("#### 🎯 Por que esse modelo funciona")
     st.markdown(
         """
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <thead>
-                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                    <th style="padding: 12px; text-align: left; font-weight: 600;">Componente</th>
-                    <th style="padding: 12px; text-align: left; font-weight: 600;">Como funciona</th>
-                    <th style="padding: 12px; text-align: left; font-weight: 600;">Por que é justo</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr style="border-bottom: 1px solid #dee2e6;">
-                    <td style="padding: 12px;"><strong>Custo por Disparo</strong></td>
-                    <td style="padding: 12px;">R&#36; 0,20 por lead sem resposta</td>
-                    <td style="padding: 12px;">Você só paga pelo alcance real</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
-                    <td style="padding: 12px;"><strong>Custo por Resposta</strong></td>
-                    <td style="padding: 12px;">R&#36; 2,50 a R&#36; 5,00 (escalonado)</td>
-                    <td style="padding: 12px;">Quanto mais engajamento, menor o custo</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #dee2e6;">
-                    <td style="padding: 12px;"><strong>Custo por Lead Qualificado</strong></td>
-                    <td style="padding: 12px;">R&#36; 5,00 a R&#36; 15,00 por qualificado</td>
-                    <td style="padding: 12px;">Pagamento por resultado real</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
-                    <td style="padding: 12px;"><strong>Custo por Lead Avançado</strong></td>
-                    <td style="padding: 12px;">R&#36; 40,00 a R&#36; 80,00 por avanço</td>
-                    <td style="padding: 12px;">Só cobra quando o lead avança</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #dee2e6;">
-                    <td style="padding: 12px;"><strong>Comissão sobre Vendas</strong></td>
-                    <td style="padding: 12px;">3% do <strong>LTV</strong> por venda</td>
-                    <td style="padding: 12px;">Ganhamos juntos com o valor total</td>
-                </tr>
-            </tbody>
-        </table>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        ---
-        
-        #### 🎯 Incentivos Alinhados
-        
-        - **Sem resultado = baixo custo**: Se a IA não conseguir engajar, você paga apenas o mínimo
-        - **Com resultado = custo proporcional**: Quanto mais leads qualificados e avançados, maior o investimento — mas também maior o retorno
-        - **Comissão sobre vendas (SMB)**: Participamos do seu sucesso nas vendas que a Tamires conduziu
-        - **Reunião qualificada (+20 vidas)**: Seu vendedor recebe o lead pronto para fechar
+        - **POC com risco reduzido**: Setup cobre infraestrutura + 2.000 leads/mês, você paga success fees pelos resultados
+        - **Incentivos alinhados**: Ganhamos quando você ganha (comissão sobre 1ª mensalidade)
+        - **Escala gradual**: Após validar o POC, expanda com confiança
         
         > *"Não vendemos horas ou licenças. Vendemos resultados."*
         """
@@ -409,7 +409,7 @@ minimum_billing = st.sidebar.number_input(
 
 # Comissão de Vendas
 st.sidebar.subheader("💵 Comissão de Vendas")
-st.sidebar.caption("Comissão sobre o LTV das vendas fechadas")
+st.sidebar.caption("Comissão sobre a 1ª mensalidade das vendas fechadas")
 
 ticket_medio_mensal = st.sidebar.number_input(
     "Ticket Médio Mensal (R$)",
@@ -456,31 +456,39 @@ comissao_vendas = (
     st.sidebar.slider(
         "Comissão de Vendas (%)",
         min_value=0.0,
-        max_value=10.0,
-        value=3.0,
-        step=0.5,
-        format="%.1f%%",
-        help="Porcentagem do LTV por venda fechada (alinhado com comissão atual: 3-5%)",
+        max_value=100.0,
+        value=50.0,
+        step=5.0,
+        format="%.0f%%",
+        help="Porcentagem da primeira mensalidade por venda fechada",
     )
     / 100.0
 )
 
-# Para cálculos, usamos o LTV como base da comissão
-ticket_medio = ltv_valor  # Comissão é sobre o LTV, não apenas o ticket mensal
+# Para cálculos, comissão é sobre a primeira mensalidade (não LTV)
+ticket_medio = ticket_medio_mensal  # Comissão é sobre a primeira mensalidade
 
 # Taxa de Setup (única vez)
-st.sidebar.subheader("🚀 Taxa de Setup (Única Vez)")
+st.sidebar.subheader("🚀 Taxa de Setup (POC 3 meses)")
 st.sidebar.markdown(
     """
-    **R$ 14.470,00**
+    **14.470 reais**
     
-    ✅ Criação da **Tamires** (Agente IA)  
-    ✅ Suporte total durante implantação  
-    ✅ Treinamento da equipe TPWeb  
-    ✅ Integração com Salesforce
+    📋 **Incluso no Setup:**
+    - Criação da Tamires (Agente IA)
+    - Integração Salesforce
+    - Suporte & Treinamento
+    - **2.000 leads processados/mês**
+    
+    💰 **Success Fees (adicionais):**
+    - Por lead qualificado
+    - Por lead avançado/agendado
+    - **50% da 1ª mensalidade** por venda
     """
 )
 setup_fee = 14470.0
+poc_leads_inclusos = 2000  # Leads com resposta inclusos no POC
+poc_meses = 3
 
 
 # --- Função para formatar tabelas de preços ---
@@ -511,8 +519,10 @@ def format_price_table(df, show_ranges=True):
 st.sidebar.subheader("💰 Tabelas de Preços")
 st.sidebar.caption("Configure as faixas de preço por volume (preços escalonados)")
 
-with st.sidebar.expander("📧 Custo por Envio (Sem Resposta)", expanded=False):
-    st.caption("Custo fixo por lead que não respondeu")
+with st.sidebar.expander("📧 Custo por Disparo (pós-POC)", expanded=False):
+    st.caption(
+        "Custo fixo por lead contactado sem resposta (não aplicável durante POC)"
+    )
     df_no_reply = pd.DataFrame([{"Valor": 0.20}])
     df_no_reply_display = format_price_table(df_no_reply, show_ranges=False)
     st.dataframe(
@@ -525,8 +535,8 @@ with st.sidebar.expander("📧 Custo por Envio (Sem Resposta)", expanded=False):
     )
 
 
-with st.sidebar.expander("💬 Custo por Lead (com Resposta)", expanded=False):
-    st.caption("Preço por lead que respondeu, escalonado por volume de respostas")
+with st.sidebar.expander("💬 Custo por Lead Processado", expanded=False):
+    st.caption("Preço por lead que respondeu (POC: 2.000/mês inclusos no setup)")
     df_leads = pd.DataFrame(
         [
             {"Mínimo": 0, "Máximo": 300, "Valor": 5.00},
@@ -749,7 +759,9 @@ if target_total_leads > 0:
         # Receita mensal real (cash flow)
         receita_mensal = target_results["num_vendas"] * ticket_medio_mensal
         # LTV total (valor completo do cliente)
-        receita_ltv = target_results["num_vendas"] * ticket_medio  # ticket_medio = LTV
+        receita_ltv = (
+            target_results["num_vendas"] * ltv_valor
+        )  # ltv_valor = ticket_medio_mensal × meses
         st.metric(
             label="📈 Receita Mensal",
             value=f"R$ {receita_mensal:,.2f}",
@@ -761,8 +773,8 @@ if target_total_leads > 0:
         st.metric(
             label="🤝 Comissão de Vendas",
             value=f"R$ {target_results['cost_comissao']:,.2f}",
-            delta=f"{comissao_vendas * 100:.1f}% do LTV",
-            help="Comissão calculada sobre o Lifetime Value completo",
+            delta=f"{comissao_vendas * 100:.0f}% da 1ª mensalidade",
+            help="Comissão calculada sobre a primeira mensalidade",
         )
 
     with sales_col4:
@@ -797,6 +809,11 @@ if target_total_leads > 0:
     receita_acumulada = 0
     custo_sailer_acumulado = setup_fee  # Começa com o setup
 
+    # Custos separados para POC vs Pós-POC
+    cost_leads_processados = target_results["cost_leads_processados"]
+    success_fees_puros = target_results["success_fees_puros"]
+    num_leads_processados = target_results["num_replies"]
+
     for mes in range(1, 13):
         # Novos clientes entram
         clientes_ativos += vendas_por_mes
@@ -812,14 +829,34 @@ if target_total_leads > 0:
         receita_mes = clientes_ativos * ticket_medio_mensal
         receita_acumulada += receita_mes
 
-        # Custo Sailer acumulado
-        custo_sailer_acumulado += final_cost
+        # Custo Sailer: POC (meses 1-3) tem 2.000 leads processados inclusos
+        if mes <= poc_meses:
+            # POC: 2.000 leads processados inclusos, só paga success fees
+            # Se processar mais de 2.000, paga o excedente
+            leads_excedentes = max(0, num_leads_processados - poc_leads_inclusos)
+            custo_leads_excedentes = (
+                (cost_leads_processados / num_leads_processados * leads_excedentes)
+                if num_leads_processados > 0
+                else 0
+            )
+            custo_mes = success_fees_puros + custo_leads_excedentes
+            fase = "POC"
+        else:
+            # Pós-POC: custo completo (leads processados + success fees) + mínimo
+            custo_mes = max(
+                cost_leads_processados + success_fees_puros, minimum_billing
+            )
+            fase = "Pós-POC"
+
+        custo_sailer_acumulado += custo_mes
 
         projecao_data.append(
             {
                 "Mês": mes,
+                "Fase": fase,
                 "Clientes Ativos": clientes_ativos,
                 "Receita Mensal": receita_mes,
+                "Custo Mensal": custo_mes,
                 "Receita Acumulada": receita_acumulada,
                 "Custo Sailer Acumulado": custo_sailer_acumulado,
                 "Lucro Acumulado": receita_acumulada - custo_sailer_acumulado,
@@ -905,10 +942,10 @@ if target_total_leads > 0:
         st.markdown(
             f"""
             **Resumo 12 meses:**
-            - 📈 Receita total: **R$ {receita_12_meses:,.2f}**
-            - 💳 Investimento Sailer: **R$ {custo_12_meses:,.2f}**
+            - 📈 Receita total: **{receita_12_meses:,.2f} reais**
+            - 💳 Investimento Sailer: **{custo_12_meses:,.2f} reais**
             - 🎯 Break-even: **{breakeven_text}**
-            - 💰 Lucro: **R$ {lucro_12_meses:,.2f}**
+            - 💰 Lucro: **{lucro_12_meses:,.2f} reais**
             
             > *Receita de leads que seriam perdidos sem a Tamires*
             """
@@ -923,13 +960,24 @@ if target_total_leads > 0:
     with setup_col1:
         st.info(
             f"""
-            **Taxa de Setup: R$ {setup_fee:,.2f}**
+            **Taxa de Setup: {setup_fee:,.2f} reais**
             
-            O investimento inicial inclui:
-            - ✅ **Criação do Agente de IA** - Configuração completa e personalizada
-            - ✅ **Suporte Total** - Acompanhamento dedicado durante implantação
-            - ✅ **Treinamento** - Capacitação da equipe para uso da plataforma
-            - ✅ **Integração com Salesforce** - Conexão completa com seu CRM
+            **📋 Incluso no Setup (POC 3 meses):**
+            - Criação da Tamires (Agente IA)
+            - Integração Salesforce
+            - Suporte & Treinamento
+            - **2.000 leads processados/mês**
+            
+            **💰 Success Fees (pagos adicionalmente):**
+            - Por lead qualificado
+            - Por lead avançado/agendado
+            - **50% da 1ª mensalidade** por venda
+            
+            **📈 Pós-POC (Mês 4+):**
+            - Custo por lead processado
+            - Mínimo mensal aplicável
+            
+            *❌ Não incluso: Google Calendar, validação facial*
             """
         )
 
@@ -1020,34 +1068,47 @@ if target_total_leads > 0:
         )
 
     st.caption(
-        f"💡 *Base: 10 vendedores × R$ 9.000 (comp média) × 1.6 (encargos) = R$ {custo_time_total:,.0f}/mês para {volume_leads_atual:,} leads = R$ {custo_por_lead_atual:.2f}/lead*"
+        f"💡 *Base: 10 vendedores × 9.000 reais (comp média) × 1.6 (encargos) = {custo_time_total:,.0f} reais/mês para {volume_leads_atual:,} leads = {custo_por_lead_atual:.2f} reais/lead*"
     )
 
     st.divider()
 
     # Detalhamento dos custos
     st.subheader("💰 Composição do Custo Mensal")
+
+    # Calcular leads processados excedentes no POC
+    leads_processados = int(target_results["num_replies"])
+    leads_inclusos_poc = min(leads_processados, poc_leads_inclusos)
+    leads_excedentes = max(0, leads_processados - poc_leads_inclusos)
+
+    st.caption(
+        f"📋 **POC:** {leads_inclusos_poc:,} leads processados inclusos no setup | {leads_excedentes:,} excedentes cobrados"
+    )
+
     cost_data = {
         "Componente": [
-            "Sem Resposta",
-            "Leads (com Resposta)",
+            "Leads Processados (com resposta)",
             "Leads Qualificados",
             "Leads Avançados / Reuniões",
             "Comissão de Vendas",
         ],
         "Quantidade": [
-            f"{int(target_results['num_no_replies']):,}",
-            f"{int(target_results['num_replies']):,}",
+            f"{leads_processados:,}",
             f"{int(target_results['num_qualified']):,}",
             f"{int(target_results['num_booked']):,}",
             f"{target_results['num_vendas']:.1f} vendas",
         ],
         "Custo (R$)": [
-            target_results["cost_no_reply"],
             target_results["cost_replies"],
             target_results["cost_qualified"],
             target_results["cost_booked"],
             target_results["cost_comissao"],
+        ],
+        "POC": [
+            f"Até {poc_leads_inclusos:,} inclusos",
+            "Success Fee",
+            "Success Fee",
+            "Success Fee",
         ],
     }
 
