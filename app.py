@@ -308,15 +308,15 @@ with st.expander(
             **📈 Pós-POC (Mês 4+)**
             
             **Custo por Lead Processado:**
-            - 2,50 a 5,00 reais (escalonado)
+            - 5,00 → 2,50 reais (quanto mais, menor)
             - Cobrança mínima mensal aplicável
             
             **+ Success Fees:**
-            - 5 a 15 reais por qualificação
-            - 40 a 80 reais por avanço
+            - 15 → 5 reais por qualificação
+            - 80 → 40 reais por avanço
             - **50% da 1ª mensalidade** por venda
             
-            *Preços escalonados por volume*
+            *Quanto mais escala, menor o custo*
             """
         )
 
@@ -329,6 +329,22 @@ with st.expander(
         - **Escala gradual**: Após validar o POC, expanda com confiança
         
         > *"Não vendemos horas ou licenças. Vendemos resultados."*
+        """
+    )
+
+    st.markdown("---")
+    st.markdown("#### 📊 Como funciona o preço escalonado")
+    st.markdown(
+        """
+        O custo é calculado **por faixa de volume**. Exemplo com 500 leads processados:
+        
+        | Faixa | Volume na Faixa | Preço | Custo |
+        |-------|-----------------|-------|-------|
+        | 0-300 | 300 leads | 5,00 | 1.500 |
+        | 300-500 | 200 leads | 4,00 | 800 |
+        | **Total** | **500 leads** | - | **2.300** |
+        
+        *Quanto mais volume, mais leads entram nas faixas com menor preço!*
         """
     )
 
@@ -536,7 +552,7 @@ with st.sidebar.expander("📧 Custo por Disparo (pós-POC)", expanded=False):
 
 
 with st.sidebar.expander("💬 Custo por Lead Processado", expanded=False):
-    st.caption("Preço por lead que respondeu (POC: 2.000/mês inclusos no setup)")
+    st.caption("5,00 → 2,50 reais (POC: 2.000/mês inclusos no setup)")
     df_leads = pd.DataFrame(
         [
             {"Mínimo": 0, "Máximo": 300, "Valor": 5.00},
@@ -582,7 +598,7 @@ with st.sidebar.expander("💬 Custo por Lead Processado", expanded=False):
         edited_df_leads = df_leads
 
 with st.sidebar.expander("✅ Custo por Lead Qualificado", expanded=False):
-    st.caption("Preço por lead qualificado, escalonado por volume de qualificados")
+    st.caption("15 → 5 reais (quanto mais qualificados, menor o custo)")
     df_qualified = pd.DataFrame(
         [
             {"Mínimo": 0, "Máximo": 75, "Valor": 15.00},
@@ -623,7 +639,7 @@ with st.sidebar.expander("✅ Custo por Lead Qualificado", expanded=False):
         edited_df_qualified = df_qualified
 
 with st.sidebar.expander("📈 Custo por Lead Avançado", expanded=False):
-    st.caption("Preço por lead que avançou para cotação/oportunidade")
+    st.caption("80 → 40 reais (quanto mais avanços, menor o custo)")
     df_booked = pd.DataFrame(
         [
             {"Mínimo": 0, "Máximo": 30, "Valor": 80.00},
