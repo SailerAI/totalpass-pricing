@@ -187,7 +187,7 @@ with hero_col3:
     st.markdown(
         f"""
         <div style="background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%); padding: 20px; border-radius: 12px; text-align: center; color: white;">
-            <h1 style="margin: 0; font-size: 2.5rem;">R$ {custo_time/1000:.0f}k</h1>
+            <h1 style="margin: 0; font-size: 2.5rem;">R$ {custo_time / 1000:.0f}k</h1>
             <p style="margin: 5px 0 0 0; opacity: 0.9;">custo mensal do time de vendas (10 pessoas)</p>
         </div>
         """,
@@ -291,7 +291,7 @@ with st.expander(
             - Criação da Tamires (Agente IA)
             - Integração Salesforce
             - Suporte & Treinamento
-            - **2.000 leads processados/mês**
+            - **2.000 leads processados (total POC)**
             
             **+ Success Fees (adicionais):**
             - Por lead qualificado
@@ -324,7 +324,7 @@ with st.expander(
     st.markdown("#### 🎯 Por que esse modelo funciona")
     st.markdown(
         """
-        - **POC com risco reduzido**: Setup cobre infraestrutura + 2.000 leads/mês, você paga success fees pelos resultados
+        - **POC com risco reduzido**: Setup cobre infraestrutura + 2.000 leads (total POC), você paga success fees pelos resultados
         - **Incentivos alinhados**: Ganhamos quando você ganha (comissão sobre 1ª mensalidade)
         - **Escala gradual**: Após validar o POC, expanda com confiança
         
@@ -463,7 +463,7 @@ taxa_conversao_vendas = (
         value=float(TOTALPASS_DATA["taxa_conversao_atual"] * 100),
         step=1.0,
         format="%.0f%%",
-        help=f"Taxa atual TotalPass: {TOTALPASS_DATA['taxa_conversao_atual']*100:.1f}%",
+        help=f"Taxa atual TotalPass: {TOTALPASS_DATA['taxa_conversao_atual'] * 100:.1f}%",
     )
     / 100.0
 )
@@ -494,7 +494,7 @@ st.sidebar.markdown(
     - Criação da Tamires (Agente IA)
     - Integração Salesforce
     - Suporte & Treinamento
-    - **2.000 leads processados/mês**
+    - **2.000 leads processados (total POC)**
     
     💰 **Success Fees (adicionais):**
     - Por lead qualificado
@@ -503,7 +503,7 @@ st.sidebar.markdown(
     """
 )
 setup_fee = 14470.0
-poc_leads_inclusos = 2000  # Leads com resposta inclusos no POC
+poc_leads_inclusos = 2000  # Leads com resposta inclusos no POC TOTAL (3 meses)
 poc_meses = 3
 
 
@@ -552,7 +552,7 @@ with st.sidebar.expander("📧 Custo por Disparo (pós-POC)", expanded=False):
 
 
 with st.sidebar.expander("💬 Custo por Lead Processado", expanded=False):
-    st.caption("5,00 → 2,50 reais (POC: 2.000/mês inclusos no setup)")
+    st.caption("5,00 → 2,50 reais (POC: 2.000 total inclusos no setup)")
     df_leads = pd.DataFrame(
         [
             {"Mínimo": 0, "Máximo": 300, "Valor": 5.00},
@@ -830,6 +830,16 @@ if target_total_leads > 0:
     success_fees_puros = target_results["success_fees_puros"]
     num_leads_processados = target_results["num_replies"]
 
+    # Custo unitário por lead processado
+    custo_unitario_lead = (
+        cost_leads_processados / num_leads_processados
+        if num_leads_processados > 0
+        else 0
+    )
+
+    # Controle de leads inclusos no POC (2.000 total para todo o POC)
+    leads_poc_restantes = poc_leads_inclusos
+
     for mes in range(1, 13):
         # Novos clientes entram
         clientes_ativos += vendas_por_mes
@@ -845,16 +855,15 @@ if target_total_leads > 0:
         receita_mes = clientes_ativos * ticket_medio_mensal
         receita_acumulada += receita_mes
 
-        # Custo Sailer: POC (meses 1-3) tem 2.000 leads processados inclusos
+        # Custo Sailer: POC (meses 1-3) tem 2.000 leads processados inclusos NO TOTAL
         if mes <= poc_meses:
-            # POC: 2.000 leads processados inclusos, só paga success fees
-            # Se processar mais de 2.000, paga o excedente
-            leads_excedentes = max(0, num_leads_processados - poc_leads_inclusos)
-            custo_leads_excedentes = (
-                (cost_leads_processados / num_leads_processados * leads_excedentes)
-                if num_leads_processados > 0
-                else 0
-            )
+            # POC: usa os leads restantes do pacote incluso
+            leads_cobertos = min(num_leads_processados, leads_poc_restantes)
+            leads_excedentes = max(0, num_leads_processados - leads_cobertos)
+            leads_poc_restantes = max(0, leads_poc_restantes - num_leads_processados)
+
+            # Só paga pelos excedentes + success fees
+            custo_leads_excedentes = leads_excedentes * custo_unitario_lead
             custo_mes = success_fees_puros + custo_leads_excedentes
             fase = "POC"
         else:
@@ -982,7 +991,7 @@ if target_total_leads > 0:
             - Criação da Tamires (Agente IA)
             - Integração Salesforce
             - Suporte & Treinamento
-            - **2.000 leads processados/mês**
+            - **2.000 leads processados (total POC)**
             
             **💰 Success Fees (pagos adicionalmente):**
             - Por lead qualificado
@@ -1092,13 +1101,14 @@ if target_total_leads > 0:
     # Detalhamento dos custos
     st.subheader("💰 Composição do Custo Mensal")
 
-    # Calcular leads processados excedentes no POC
-    leads_processados = int(target_results["num_replies"])
-    leads_inclusos_poc = min(leads_processados, poc_leads_inclusos)
-    leads_excedentes = max(0, leads_processados - poc_leads_inclusos)
+    # Calcular leads processados excedentes no POC (considerando os 3 meses)
+    leads_processados_mes = int(target_results["num_replies"])
+    leads_processados_poc_total = leads_processados_mes * poc_meses  # Total nos 3 meses
+    leads_inclusos_poc = min(leads_processados_poc_total, poc_leads_inclusos)
+    leads_excedentes_poc = max(0, leads_processados_poc_total - poc_leads_inclusos)
 
     st.caption(
-        f"📋 **POC:** {leads_inclusos_poc:,} leads processados inclusos no setup | {leads_excedentes:,} excedentes cobrados"
+        f"📋 **POC (3 meses):** {leads_processados_mes:,}/mês × 3 = {leads_processados_poc_total:,} total | {leads_inclusos_poc:,} inclusos no setup | {leads_excedentes_poc:,} excedentes cobrados"
     )
 
     cost_data = {
@@ -1109,7 +1119,7 @@ if target_total_leads > 0:
             "Comissão de Vendas",
         ],
         "Quantidade": [
-            f"{leads_processados:,}",
+            f"{leads_processados_mes:,}",
             f"{int(target_results['num_qualified']):,}",
             f"{int(target_results['num_booked']):,}",
             f"{target_results['num_vendas']:.1f} vendas",
@@ -1121,7 +1131,7 @@ if target_total_leads > 0:
             target_results["cost_comissao"],
         ],
         "POC": [
-            f"Até {poc_leads_inclusos:,} inclusos",
+            f"Até {poc_leads_inclusos:,} total inclusos",
             "Success Fee",
             "Success Fee",
             "Success Fee",
